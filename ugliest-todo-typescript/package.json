@@ -1,0 +1,16 @@
+{
+  "name": "ugly-todo-typescript-webpack",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --mode production"
+  },
+  "devDependencies": {
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.2",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "userbase-js": "0.0.10"
+  }
+}
