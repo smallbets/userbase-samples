@@ -1,0 +1,13 @@
+{
+  "name": "ugly-todo-webpack",
+  "license": "MIT",
+  "scripts": {
+    "build": "browserify src/index.js -o dist/main.js"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.0"
+  },
+  "dependencies": {
+    "userbase-js": "0.0.9"
+  }
+}
