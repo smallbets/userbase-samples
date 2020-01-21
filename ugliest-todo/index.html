@@ -49,7 +49,7 @@
 
   <!-- application code -->
   <script type="text/javascript">
-    userbase.init({ appId: '507612d6-3cd8-489d-9eb0-7c9f0a19411c' })
+    userbase.init({ appId: 'YOUR_APP_ID' })
       .then((session) => session.user ? showTodos(session.user.username) : showAuth())
       .catch(() => showAuth())
       .finally(() => document.getElementById('loading-view').style.display = 'none')
