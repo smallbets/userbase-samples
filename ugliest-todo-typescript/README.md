@@ -2,7 +2,7 @@
 
 ### Overview
 
-This sample project is a version of [Ugliest Todo tutorial](../ugliest-todo) written in [https://www.typescriptlang.org/](TypeScript).
+This sample project is a version of [Ugliest Todo tutorial](../ugliest-todo) written in [TypeScript](https://www.typescriptlang.org/).
 
 
 ### Running
