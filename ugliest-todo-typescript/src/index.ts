@@ -130,7 +130,7 @@ document.getElementById('logout-button').addEventListener('click', handleLogout)
 document.getElementById('todo-view').style.display = 'none';
 document.getElementById('auth-view').style.display = 'none';
 
-userbase.init({ appId: '5999f302-4cd7-4e31-8d1a-fd6ad83834e7'})
+userbase.init({ appId: '507612d6-3cd8-489d-9eb0-7c9f0a19411c'})
   .then((session) => session.user ? showTodos(session.user.username) : showAuth())
   .catch(() => showAuth())
   .then(() => document.getElementById('loading-view').style.display = 'none');
