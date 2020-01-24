@@ -11,6 +11,6 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "userbase-js": "0.0.10"
+    "userbase-js": "^0.0.11"
   }
 }

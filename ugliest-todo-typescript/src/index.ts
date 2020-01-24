@@ -97,7 +97,7 @@ const handleLogin = (e: Event) => {
   const username = (document.getElementById('login-username') as HTMLInputElement).value;
   const password = (document.getElementById('login-password') as HTMLInputElement).value;
 
-  userbase.signIn({ username, password })
+  userbase.signIn({ username, password, rememberMe: 'local' })
     .then((user) => showTodos(user.username))
     .catch((e: string) => document.getElementById('login-error').innerHTML = e);
 }
@@ -108,7 +108,7 @@ const handleSignUp = (e: Event) => {
   const username = (document.getElementById('signup-username') as HTMLInputElement).value;
   const password = (document.getElementById('signup-password') as HTMLInputElement).value;
 
-  userbase.signUp({ username, password, rememberMe: true })
+  userbase.signUp({ username, password, rememberMe: 'local' })
     .then((user) => showTodos(user.username))
     .catch((e: string) => document.getElementById('signup-error').innerHTML = e);
 }

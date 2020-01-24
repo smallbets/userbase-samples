@@ -89,7 +89,7 @@ function handleLogin(e) {
   const username = document.getElementById('login-username').value
   const password = document.getElementById('login-password').value
 
-  userbase.signIn({ username, password })
+  userbase.signIn({ username, password, rememberMe: 'local' })
     .then((user) => showTodos(user.username))
     .catch((e) => document.getElementById('login-error').innerHTML = e)
 }
@@ -100,7 +100,7 @@ function handleSignUp(e) {
   const username = document.getElementById('signup-username').value
   const password = document.getElementById('signup-password').value
 
-  userbase.signUp({ username, password, rememberMe: true })
+  userbase.signUp({ username, password, rememberMe: 'local' })
     .then((user) => showTodos(user.username))
     .catch((e) => document.getElementById('signup-error').innerHTML = e)
 }

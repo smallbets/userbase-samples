@@ -8,6 +8,6 @@
     "browserify": "^16.5.0"
   },
   "dependencies": {
-    "userbase-js": "0.0.9"
+    "userbase-js": "^0.0.11"
   }
 }

@@ -11,6 +11,6 @@
     "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
-    "userbase-js": "0.0.9"
+    "userbase-js": "^0.0.11"
   }
 }
