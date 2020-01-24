@@ -85,7 +85,6 @@
     function showTodos(username) {
       document.getElementById('auth-view').style.display = 'none'
       document.getElementById('todo-view').style.display = 'block'
-      document.getElementById('add-todo-form').style.display = 'block'
 
       // reset the todos view
       document.getElementById('username').innerHTML = username
@@ -176,7 +175,6 @@
     document.getElementById('logout-button').addEventListener('click', handleLogout)
     
     document.getElementById('todo-view').style.display = 'none'
-    document.getElementById('add-todo-form').style.display = 'none'
     document.getElementById('auth-view').style.display = 'none'
 
   </script>
