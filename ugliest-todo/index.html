@@ -72,7 +72,7 @@
       const password = document.getElementById('signup-password').value
 
       userbase.signUp({ username, password, rememberMe: 'local' })
-       .then((user) => showTodos(user.username))
+        .then((user) => showTodos(user.username))
         .catch((e) => document.getElementById('signup-error').innerHTML = e)
     }
 
