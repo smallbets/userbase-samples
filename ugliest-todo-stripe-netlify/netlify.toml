@@ -1,0 +1,4 @@
+[build]
+  publish = "public"
+  functions = "functions"
+  command = "cd ./functions && npm install"

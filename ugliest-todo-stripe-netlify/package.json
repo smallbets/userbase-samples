@@ -1,0 +1,12 @@
+{
+  "name": "ugly-todo-stripe-netlify",
+  "description": "Ugliest To-Do App with Stripe and Netlify integration",
+  "version": "1.0.0",
+  "author": "Justin Berman",
+  "license": "MIT",
+  "dependencies": {
+    "stripe": "8.8.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8"
+  }
+}
