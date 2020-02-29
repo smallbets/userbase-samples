@@ -1,7 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY)
 const request = require('request-promise-native')
 
-exports.handler = async (req, res) => {
+exports.handler = async (req, context) => {
   try {
     const event = stripe.webhooks.constructEvent(
       req.body,
@@ -28,9 +28,18 @@ exports.handler = async (req, res) => {
       }).promise()
     }
 
-    res.json({ received: true })
+    console.log(`Stripe webhook succeeded`)
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ received: true })
+    }
   } catch (err) {
     console.log(`Stripe webhook failed with ${err}`)
-    return res.status(400).send(`Webhook Error: ${err.message}`)
+    
+    return {
+      statusCode: 400,
+      body: `Webhook Error: ${err.message}`
+    }
   }
 }
