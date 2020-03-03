@@ -46,22 +46,16 @@ netlify dev
 
 🎉 Watch your terminal windows for webhook events and error logs.
 
-### 💫 Deploy with Netlify
+### Deploy to Netlify
 
 Your Netlify Function will have the following URL shape (`https://your-project-name.netlify.com/.netlify/functions/checkout`). Use this to create a live webhook endpoint [in your Stripe dashboard](https://stripe.com/docs/webhooks/setup#configure-webhook-settings).
 
-Your live webhook will have a different signing secret, which you can retrieve from the webhook details page. Use this secret in your Netlify deploy settings (you will be prompted to enter it when hitting the deploy button below).
+Your live webhook will have a different signing secret, which you can retrieve from the webhook details page. Use this secret in your Netlify deploy settings.
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://github.com/encrypted-dev/userbase-samples/tree/master/ugliest-todo-stripe-netlify)
+The Netlify deploy command will not set up the variables from your `.env` file. You will need to set up your secrets manually in the [Netlify build settings](https://app.netlify.com/sites/userbase-with-stripe/settings/deploys#environment-variables).
 
-**Note:** Hitting the "Deploy to Netlify Button" will create a repository on your GitHub account. You will then need to modify the [public/client_config.js](public/client_config.js) file with your public identifiers and commit these changes to master. Netlify will then automatically redeploy and you're ready to go 🎉
-
-### Deploy manually
-
-Alternatively, if you've already got the project set up locally, you can deploy manually by running:
+Now run:
 
 ```shell
 netlify deploy --prod --functions=functions
 ```
-
-**Note:** when deploying manually, you will need to set up your secrets manually in the [Netlify build settings](https://app.netlify.com/sites/userbase-with-stripe/settings/deploys#environment-variables).
