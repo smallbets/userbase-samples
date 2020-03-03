@@ -2,3 +2,9 @@
   publish = "public"
   functions = "functions"
   command = "cd ./functions && npm install"
+
+
+[template.environment]
+  USERBASE_ADMIN_API_ACCESS_TOKEN = "Add your private Userbase token"
+  STRIPE_SECRET_KEY = "Add your Stripe secret key here: sk_test_xxx"
+  STRIPE_WEBHOOK_SECRET = "Add your webhook signing secret: whsec_xxx"

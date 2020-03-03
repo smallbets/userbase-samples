@@ -1,16 +1,18 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY)
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const request = require('request-promise-native')
 
-exports.handler = async (req, context) => {
+exports.handler = async (event, context) => {
   try {
-    const event = stripe.webhooks.constructEvent(
-      req.body,
-      req.headers['stripe-signature'],
+    const stripeEvent = stripe.webhooks.constructEvent(
+      event.body,
+      event.headers['stripe-signature'],
       process.env.STRIPE_WEBHOOK_SECRET
     )
 
-    if (event.type === 'checkout.session.completed') {
-      const userId = event.data.object.client_reference_id
+    if (stripeEvent.type === 'checkout.session.completed') {
+      const eventObject = stripeEvent.data.object
+      const userId = eventObject.client_reference_id
+      const customerId = eventObject.customer
 
       // set payment flag on user's protected profile
       await request({
@@ -22,7 +24,8 @@ exports.handler = async (req, context) => {
         json: true,
         body: {
           protectedProfile: {
-            paymentStatus: 'paid' 
+            paymentStatus: 'paid',
+            customerId
           }
         }
       }).promise()
@@ -36,7 +39,7 @@ exports.handler = async (req, context) => {
     }
   } catch (err) {
     console.log(`Stripe webhook failed with ${err}`)
-    
+
     return {
       statusCode: 400,
       body: `Webhook Error: ${err.message}`
