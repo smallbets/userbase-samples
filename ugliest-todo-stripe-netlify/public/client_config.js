@@ -6,7 +6,8 @@ const config = {
   // https://stripe.com/docs/payments/checkout/client-only
   SUBSCRIPTION_PLAN: 'plan_GqTUH5dUIPLJNY',
   // Your Netlify function root URL
-  // running local: http://localhost:34567
+  // running locally: http://localhost:34567
   // running on Netlify: https://your-project-name.netlify.com/.netlify/functions
-  NETLIFY_FUNCTION_URL: 'http://localhost:34567'
+  NETLIFY_FUNCTION_URL:
+    'https://ugliest-todo-stripe.netlify.com/.netlify/functions'
 }
