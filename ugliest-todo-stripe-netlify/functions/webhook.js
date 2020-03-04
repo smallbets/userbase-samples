@@ -13,19 +13,21 @@ exports.handler = async (event, context) => {
       const eventObject = stripeEvent.data.object
       const userId = eventObject.client_reference_id
       const customerId = eventObject.customer
+      const subscriptionId = eventObject.subscription
 
       // set payment flag on user's protected profile
       await request({
         method: 'POST',
-        uri: 'https://v1.userbase.com/v1/admin/users/' + userId,
+        uri: `https://v1.userbase.com/v1/admin/users/${userId}`,
         auth: {
           bearer: process.env.USERBASE_ADMIN_API_ACCESS_TOKEN
         },
         json: true,
         body: {
           protectedProfile: {
-            paymentStatus: 'paid',
-            customerId
+            subscriptionStatus: 'active',
+            customerId,
+            subscriptionId
           }
         }
       }).promise()
@@ -37,12 +39,12 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       body: JSON.stringify({ received: true })
     }
-  } catch (err) {
-    console.log(`Stripe webhook failed with ${err}`)
+  } catch (error) {
+    console.log(`Stripe webhook error: ${error}`)
 
     return {
       statusCode: 400,
-      body: `Webhook Error: ${err.message}`
+      body: JSON.stringify({ error })
     }
   }
 }

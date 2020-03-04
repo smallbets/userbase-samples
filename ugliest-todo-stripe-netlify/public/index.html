@@ -59,7 +59,16 @@
       <div id="username"></div>
 
       <input type="button" value="Logout" id="logout-button" />
-      <input type="button" value="Purchase Subscription" id="payment-button" />
+      <input
+        type="button"
+        value="Purchase Subscription for $5 per month"
+        id="payment-button"
+      />
+      <input
+        type="button"
+        value="Cancel subscription immediately!"
+        id="cancel-subscription-button"
+      />
 
       <div id="logout-error"></div>
       <div id="checkout-error"></div>
@@ -126,7 +135,7 @@
 
         stripe
           .redirectToCheckout({
-            items: [{ sku: config.SKU, quantity: 1 }],
+            items: [{ plan: config.SUBSCRIPTION_PLAN, quantity: 1 }],
             clientReferenceId: e.target.userId,
             successUrl: window.location.origin,
             cancelUrl: window.location.origin
@@ -143,7 +152,31 @@
           })
       }
 
+      function handleSubscriptionCancellation(e) {
+        document.getElementById('cancel-subscription-button').value =
+          'Cancelling...'
+        document.getElementById('cancel-subscription-button').disabled = true
+        // Send request to our Netlify function
+        fetch(`${config.NETLIFY_FUNCTION_URL}/cancel_subscription`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId: e.target.userId })
+        })
+          .then(res => res.json())
+          .then(({ error }) => {
+            if (error) {
+              console.warn('Error cancelling the subscription!', error)
+            } else {
+              location.reload()
+            }
+          })
+      }
+
       function showTodos(user) {
+        console.log({ user })
+
         const { username, userId, protectedProfile } = user
 
         document.getElementById('auth-view').style.display = 'none'
@@ -156,18 +189,20 @@
         document.getElementById('db-error').innerText = ''
 
         // check if user has paid
-        if (protectedProfile && protectedProfile.paymentStatus === 'paid') {
+        if (
+          protectedProfile &&
+          protectedProfile.subscriptionStatus === 'active'
+        ) {
           document.getElementById('todo-form').style.display = 'block'
           document.getElementById('payment-button').style.display = 'none'
+          document.getElementById('cancel-subscription-button').userId = userId
+          document.getElementById('cancel-subscription-button').style.display =
+            'block'
         } else {
           document.getElementById('todo-form').style.display = 'none'
+          document.getElementById('cancel-subscription-button').style.display =
+            'none'
           document.getElementById('payment-button').userId = userId
-          document
-            .getElementById('payment-button')
-            .removeEventListener('click', handleCheckout)
-          document
-            .getElementById('payment-button')
-            .addEventListener('click', handleCheckout)
           document.getElementById('payment-button').style.display = 'block'
         }
 
@@ -273,6 +308,12 @@
       document
         .getElementById('logout-button')
         .addEventListener('click', handleLogout)
+      document
+        .getElementById('payment-button')
+        .addEventListener('click', handleCheckout)
+      document
+        .getElementById('cancel-subscription-button')
+        .addEventListener('click', handleSubscriptionCancellation)
 
       document.getElementById('todo-view').style.display = 'none'
       document.getElementById('auth-view').style.display = 'none'
