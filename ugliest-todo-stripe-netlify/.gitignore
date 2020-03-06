@@ -1,0 +1,8 @@
+dist/*
+node_modules
+
+!dist/index.html
+
+.env
+
+.netlify
