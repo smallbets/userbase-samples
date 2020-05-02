@@ -59,6 +59,7 @@
       <input type="button" value="Update Payment Method" id="update-payment-button" />
       <input type="button" value="Cancel Subscription" id="cancel-subscription-button" />
       <input type="button" value="Resume Subscription" id="resume-subscription-button" />
+      <div id="trial-date"></div>
       <div id="cancel-date"></div>
 
       <div id="logout-error"></div>
@@ -160,7 +161,7 @@
       }
 
       function loadApp(user) {
-        const { username, subscriptionStatus, cancelSubscriptionAt } = user
+        const { username, subscriptionStatus, cancelSubscriptionAt, trialExpirationDate } = user
 
         document.getElementById('auth-view').style.display = 'none'
         document.getElementById('todo-view').style.display = 'block'
@@ -173,7 +174,12 @@
         document.getElementById('payment-button').style.display = 'none'
         document.getElementById('resume-subscription-button').style.display = 'none'
         document.getElementById('cancel-subscription-button').style.display = 'none'
+        document.getElementById('cancel-date').innerHtml = ''
+        document.getElementById('trial-date').innerHtml = ''
         document.getElementById('update-payment-button').style.display = 'none'
+
+        const trialExpired = trialExpirationDate && new Date > new Date(trialExpirationDate)
+        if (trialExpired) document.getElementById('trial-date').innerHTML = 'Trial expired'        
 
         // check if user has ever purchased subscription
         if (subscriptionStatus && subscriptionStatus !== 'canceled') {
@@ -183,12 +189,13 @@
           enableButton(document.getElementById('payment-button'), handleCheckout)
         }
 
-        // open the user's database if subscription is active
-        if (subscriptionStatus === 'active' || subscriptionStatus === 'trialing') {
+        // open the user's database if subscription is active or trialing
+        if (subscriptionStatus === 'active' || (trialExpirationDate && !trialExpired)) {
           document.getElementById('todo-form').style.display = 'block'
 
           if (cancelSubscriptionAt) showResumeSubscriptionButton(cancelSubscriptionAt)
-          else showCancelSubscriptionButton()
+          else if (subscriptionStatus) showCancelSubscriptionButton()
+          else if (trialExpirationDate) document.getElementById('trial-date').innerHTML = 'Trial expires on: ' + new Date(trialExpirationDate).toLocaleDateString()
           
           userbase
             .openDatabase({ databaseName: 'todos', changeHandler })
@@ -198,7 +205,7 @@
 
       function showResumeSubscriptionButton(cancelSubscriptionAt) {
         document.getElementById('cancel-subscription-button').style.display = 'none'
-        document.getElementById('cancel-date').innerHTML = 'Cancelling subscription on: ' + new Date(cancelSubscriptionAt).toLocaleDateString()
+        document.getElementById('cancel-date').innerHTML = 'Canceling subscription on: ' + new Date(cancelSubscriptionAt).toLocaleDateString()
         enableButton(document.getElementById('resume-subscription-button'), handleResumeSubscription)
       }
 
