@@ -89,8 +89,6 @@
 
       if (!user.subscriptionStatus) {
         userbase.purchaseSubscription({ successUrl, cancelUrl })
-          .then(() => window.alert('Redirecting to Stripe Checkout!'))
-          .catch((e) => (document.getElementById('logout-error').innerText = e))
         return
       }
 
