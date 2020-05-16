@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Ugliest To-Do</title>
+    <script type="text/javascript" src="https://sdk.userbase.com/1/userbase.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+
+  <body>
+    <!-- Loading View -->
+    <div id="loading-view">Loading...</div>
+
+    <!-- Auth View -->
+    <div id="auth-view">
+      <h1>Login</h1>
+      <form id="login-form">
+        <input
+          id="login-username"
+          type="text"
+          required
+          placeholder="Username"
+        />
+        <input
+          id="login-password"
+          type="password"
+          required
+          placeholder="Password"
+        />
+        <input type="submit" value="Sign in" />
+      </form>
+      <div id="login-error"></div>
+
+      <h1>Create an account</h1>
+      <form id="signup-form">
+        <input
+          id="signup-username"
+          type="text"
+          required
+          placeholder="Username"
+        />
+        <input
+          id="signup-password"
+          type="password"
+          required
+          placeholder="Password"
+        />
+        <input type="submit" value="Create an account" />
+      </form>
+      <div id="signup-error"></div>
+    </div>
+
+    <!-- To-dos View -->
+    <div id="todo-view">
+      <div id="username"></div>
+
+      <input type="button" value="Logout" id="logout-button" />
+      <input type="button" value="Purchase Subscription" id="payment-button" />
+      <input type="button" value="Update Payment Method" id="update-payment-button" />
+      <input type="button" value="Cancel Subscription" id="cancel-subscription-button" />
+      <input type="button" value="Resume Subscription" id="resume-subscription-button" />
+      <div id="trial-date"></div>
+      <div id="cancel-date"></div>
+
+      <div id="logout-error"></div>
+      <div id="stripe-error"></div>
+
+      <div id="todo-form">
+        <h1>To-Do List</h1>
+        <div id="todos"></div>
+        <div id="db-loading">Loading to-dos...</div>
+        <div id="db-error"></div>
+
+        <form id="add-todo-form">
+          <input id="add-todo" type="text" required placeholder="To-Do" />
+          <input type="submit" value="Add" />
+        </form>
+        <div id="add-todo-error"></div>
+      </div>
+    </div>
+
+    <!-- application code -->
+    <script type="text/javascript">
+      const appId = '5ffa4a37-a6d6-4619-b000-3d8476f0b0c0'
+      const successUrl = 'https://userbase-samples.now.sh/payments.html'
+      const cancelUrl = 'https://userbase-samples.now.sh/payments.html'
+
+      userbase
+        .init({ appId })
+        .then(session => (session.user ? loadApp(session.user) : showAuth()))
+        .catch(() => showAuth())
+        .finally(
+          () => (document.getElementById('loading-view').style.display = 'none')
+        )
+
+      function handleLogin(e) {
+        e.preventDefault()
+
+        const username = document.getElementById('login-username').value
+        const password = document.getElementById('login-password').value
+
+        userbase
+          .signIn({ username, password, rememberMe: 'local' })
+          .then(user => loadApp(user))
+          .catch(e => (document.getElementById('login-error').innerHTML = e))
+      }
+
+      function handleSignUp(e) {
+        e.preventDefault()
+
+        const username = document.getElementById('signup-username').value
+        const password = document.getElementById('signup-password').value
+
+        userbase
+          .signUp({ username, password, rememberMe: 'local' })
+          .then(user => loadApp(user))
+          .catch(e => (document.getElementById('signup-error').innerHTML = e))
+      }
+
+      function handleLogout() {
+        userbase
+          .signOut()
+          .then(() => showAuth())
+          .catch(e => (document.getElementById('logout-error').innerText = e))
+      }
+
+      function handleCheckout(e) {
+        e.preventDefault()
+
+        userbase
+          .purchaseSubscription({ successUrl, cancelUrl })
+          .then(() => window.alert('Redirecting to Stripe Checkout!'))
+          .catch((e) => (document.getElementById('stripe-error').innerText = e))
+      }
+
+      function handleUpdatePaymentMethod(e) {
+        e.preventDefault()
+
+        userbase
+          .updatePaymentMethod({ successUrl, cancelUrl })
+          .then(() => window.alert('Redirecting to Stripe Checkout!'))
+          .catch((e) => (document.getElementById('stripe-error').innerText = e))
+      }
+
+      function handleCancelSubscription(e) {
+        e.preventDefault()
+
+        userbase
+          .cancelSubscription()
+          .then(({ cancelSubscriptionAt }) => showResumeSubscriptionButton(cancelSubscriptionAt))
+          .catch((e) => (document.getElementById('stripe-error').innerText = e))
+      }
+
+      function handleResumeSubscription(e) {
+        e.preventDefault()
+
+        userbase
+          .resumeSubscription()
+          .then(() => showCancelSubscriptionButton())
+          .catch((e) => (document.getElementById('stripe-error').innerText = e))
+      }
+
+      function loadApp(user) {
+        const { username, subscriptionStatus, cancelSubscriptionAt, trialExpirationDate } = user
+
+        document.getElementById('auth-view').style.display = 'none'
+        document.getElementById('todo-view').style.display = 'block'
+
+        // reset the todos view
+        document.getElementById('username').innerHTML = username
+        document.getElementById('todos').innerText = ''
+        document.getElementById('db-loading').style.display = 'block'
+        document.getElementById('db-error').innerText = ''
+        document.getElementById('payment-button').style.display = 'none'
+        document.getElementById('resume-subscription-button').style.display = 'none'
+        document.getElementById('cancel-subscription-button').style.display = 'none'
+        document.getElementById('cancel-date').innerHtml = ''
+        document.getElementById('trial-date').innerHtml = ''
+        document.getElementById('update-payment-button').style.display = 'none'
+
+        const trialExpired = trialExpirationDate && new Date > new Date(trialExpirationDate)
+        if (trialExpired) document.getElementById('trial-date').innerHTML = 'Trial expired'        
+
+        // check if user has ever purchased subscription
+        if (subscriptionStatus && subscriptionStatus !== 'canceled') {
+          enableButton(document.getElementById('update-payment-button'), handleUpdatePaymentMethod)
+        } else {
+          document.getElementById('todo-form').style.display = 'none'
+          enableButton(document.getElementById('payment-button'), handleCheckout)
+        }
+
+        // open the user's database if subscription is active or trialing
+        if (subscriptionStatus === 'active' || (trialExpirationDate && !trialExpired)) {
+          document.getElementById('todo-form').style.display = 'block'
+
+          if (cancelSubscriptionAt) showResumeSubscriptionButton(cancelSubscriptionAt)
+          else if (subscriptionStatus) showCancelSubscriptionButton()
+          else if (trialExpirationDate) document.getElementById('trial-date').innerHTML = 'Trial expires on: ' + new Date(trialExpirationDate).toLocaleDateString()
+          
+          userbase
+            .openDatabase({ databaseName: 'todos', changeHandler })
+            .catch(e => (document.getElementById('db-error').innerText = e))
+        }
+      }
+
+      function showResumeSubscriptionButton(cancelSubscriptionAt) {
+        document.getElementById('cancel-subscription-button').style.display = 'none'
+        document.getElementById('cancel-date').innerHTML = 'Canceling subscription on: ' + new Date(cancelSubscriptionAt).toLocaleDateString()
+        enableButton(document.getElementById('resume-subscription-button'), handleResumeSubscription)
+      }
+
+      function showCancelSubscriptionButton() {
+        document.getElementById('resume-subscription-button').style.display = 'none'
+        document.getElementById('cancel-date').innerHTML = ''
+        enableButton(document.getElementById('cancel-subscription-button'), handleCancelSubscription)
+      }
+
+      function enableButton(buttonElement, onClick) {
+        buttonElement.removeEventListener('click', onClick)
+        buttonElement.addEventListener('click', onClick)
+        buttonElement.style.display = 'block'
+      }
+
+      function showAuth() {
+        document.getElementById('todo-view').style.display = 'none'
+        document.getElementById('auth-view').style.display = 'block'
+        document.getElementById('login-username').value = ''
+        document.getElementById('login-password').value = ''
+        document.getElementById('login-error').innerText = ''
+        document.getElementById('signup-username').value = ''
+        document.getElementById('signup-password').value = ''
+        document.getElementById('signup-error').innerText = ''
+      }
+
+      function changeHandler(items) {
+        document.getElementById('db-loading').style.display = 'none'
+
+        const todosList = document.getElementById('todos')
+
+        if (items.length === 0) {
+          todosList.innerText = 'Empty'
+        } else {
+          // clear the list
+          todosList.innerHTML = ''
+
+          // render all the to-do items
+          for (let i = 0; i < items.length; i++) {
+            // build the todo delete button
+            const todoDelete = document.createElement('button')
+            todoDelete.innerHTML = 'X'
+            todoDelete.style.display = 'inline-block'
+            todoDelete.onclick = () => {
+              userbase
+                .deleteItem({ databaseName: 'todos', itemId: items[i].itemId })
+                .catch(
+                  e => (document.getElementById('add-todo-error').innerHTML = e)
+                )
+            }
+
+            // build the todo checkbox
+            const todoBox = document.createElement('input')
+            todoBox.type = 'checkbox'
+            todoBox.id = items[i].itemId
+            todoBox.checked = items[i].item.complete ? true : false
+            todoBox.onclick = e => {
+              e.preventDefault()
+              userbase
+                .updateItem({
+                  databaseName: 'todos',
+                  itemId: items[i].itemId,
+                  item: {
+                    todo: items[i].item.todo,
+                    complete: !items[i].item.complete
+                  }
+                })
+                .catch(
+                  e => (document.getElementById('add-todo-error').innerHTML = e)
+                )
+            }
+
+            // build the todo label
+            const todoLabel = document.createElement('label')
+            todoLabel.innerHTML = items[i].item.todo
+            todoLabel.style.textDecoration = items[i].item.complete
+              ? 'line-through'
+              : 'none'
+
+            // append the todo item to the list
+            const todoItem = document.createElement('div')
+            todoItem.appendChild(todoDelete)
+            todoItem.appendChild(todoBox)
+            todoItem.appendChild(todoLabel)
+            todosList.appendChild(todoItem)
+          }
+        }
+      }
+
+      function addTodoHandler(e) {
+        e.preventDefault()
+
+        const todo = document.getElementById('add-todo').value
+
+        userbase
+          .insertItem({ databaseName: 'todos', item: { todo: todo } })
+          .then(() => (document.getElementById('add-todo').value = ''))
+          .catch(e => (document.getElementById('add-todo-error').innerHTML = e))
+      }
+
+      document
+        .getElementById('login-form')
+        .addEventListener('submit', handleLogin)
+      document
+        .getElementById('signup-form')
+        .addEventListener('submit', handleSignUp)
+      document
+        .getElementById('add-todo-form')
+        .addEventListener('submit', addTodoHandler)
+      document
+        .getElementById('logout-button')
+        .addEventListener('click', handleLogout)
+
+      document.getElementById('todo-view').style.display = 'none'
+      document.getElementById('auth-view').style.display = 'none'
+    </script>
+  </body>
+</html>

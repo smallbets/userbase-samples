@@ -50,7 +50,7 @@
   <!-- application code -->
   <script type="text/javascript">
     userbase.init({ appId: '507612d6-3cd8-489d-9eb0-7c9f0a19411c' })
-      .then((session) => session.user ? showTodos(session.user.username) : showAuth())
+      .then((session) => session.user ? showTodos(session.user) : showAuth())
       .catch(() => showAuth())
       .finally(() => document.getElementById('loading-view').style.display = 'none')
 
@@ -61,7 +61,7 @@
       const password = document.getElementById('login-password').value
 
       userbase.signIn({ username, password, rememberMe: 'local' })
-        .then((user) => showTodos(user.username))
+        .then((user) => showTodos(user))
         .catch((e) => document.getElementById('login-error').innerHTML = e)
     }
 
@@ -72,7 +72,7 @@
       const password = document.getElementById('signup-password').value
 
       userbase.signUp({ username, password, rememberMe: 'local' })
-        .then((user) => showTodos(user.username))
+        .then((user) => showTodos(user))
         .catch((e) => document.getElementById('signup-error').innerHTML = e)
     }
 
@@ -82,12 +82,12 @@
         .catch((e) => document.getElementById('logout-error').innerText = e)
     }
 
-    function showTodos(username) {
+    function showTodos(user) {
       document.getElementById('auth-view').style.display = 'none'
       document.getElementById('todo-view').style.display = 'block'
 
       // reset the todos view
-      document.getElementById('username').innerHTML = username
+      document.getElementById('username').innerHTML = user.username
       document.getElementById('todos').innerText = ''
       document.getElementById('db-loading').style.display = 'block'
       document.getElementById('db-error').innerText = ''
