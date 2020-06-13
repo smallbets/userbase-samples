@@ -131,7 +131,7 @@
     
       if (verifyUserOnSignIn) {
         userbase.verifyUser({ verificationMessage: verifyUserOnSignIn })
-          .then(() => window.alert(`Verified user ${JSON.parse(atob(verifyUserOnSignIn)).username}!`))
+          .then(() => window.alert(`Verified ${JSON.parse(atob(verifyUserOnSignIn)).username}!`))
           .catch((e) => window.alert('Failed to verify user: ' + JSON.stringify(e)))
       }
     }
