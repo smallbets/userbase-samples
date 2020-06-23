@@ -239,8 +239,10 @@
     }
 
     function showAuth() {
-      todoLists = {}
-      openTodoLists = {}
+      todoListsByName = {}
+      todoListsById = {}    
+      openTodoListsByName = {}
+      openTodoListsById = {}
 
       document.getElementById('todo-lists-view').style.display = 'none'
       document.getElementById('auth-view').style.display = 'block'
@@ -324,7 +326,8 @@
         }
       }
 
-      openTodoLists[todoListName] = currentTodoListState
+      if (todoListId) openTodoListsById[todoListId] = currentTodoListState
+      else openTodoListsByName[todoListName] = currentTodoListState      
     }
 
     function addTodoHandler(e) {
