@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ugliest MP4 Video Player</title>
+  <script type="text/javascript" src="https://sdk.userbase.com/2/userbase.js"></script>
+</head>
+
+<body>
+  <!-- Loading View -->
+  <div id="loading-view">Loading...</div>
+
+  <!-- Auth View -->
+  <div id="auth-view">
+    <h1>Login</h1>
+    <form id="login-form">
+      <input id="login-username" type="text" required placeholder="Username">
+      <input id="login-password" type="password" required placeholder="Password">
+      <input type="submit" value="Sign in">
+    </form>
+    <div id="login-error"></div>
+
+    <h1>Create an account</h1>
+    <form id="signup-form">
+      <input id="signup-username" type="text" required placeholder="Username">
+      <input id="signup-password" type="password" required placeholder="Password">
+      <input type="submit" value="Create an account">
+    </form>
+    <div id="signup-error"></div>
+  </div>
+
+  <!-- Videos View -->
+  <div id="videos-view">
+    <div id="username"></div>
+    <input type="button" value="Logout" id="logout-button">
+    <div id="logout-error"></div>
+
+    <br/><video controls autoplay>Your browser does not support the video tag.</video>
+
+    <h1>MP4 Videos</h1>
+    <div id="videos"></div>
+    <div id="db-loading">Loading videos...</div>
+    <div id="db-error"></div>
+
+    <form id="add-video-form">
+      <br/><input id="add-video" type="file" accept="video/mp4">
+      <br/><br/><div><input type="submit" value="Upload Video"><div id="upload-video-loader" hidden>Uploading...</div>
+    </form>
+    <div id="add-video-error"></div>
+  </div>
+
+  <!-- application code -->
+  <script type="text/javascript">
+    let playingVideo
+    let uploadingVideos = {}
+
+    userbase.init({ appId: '507612d6-3cd8-489d-9eb0-7c9f0a19411c' })
+      .then((session) => session.user ? showVideos(session.user) : showAuth())
+      .catch(() => showAuth())
+      .finally(() => document.getElementById('loading-view').style.display = 'none')
+
+    function handleLogin(e) {
+      e.preventDefault()
+
+      const username = document.getElementById('login-username').value
+      const password = document.getElementById('login-password').value
+
+      userbase.signIn({ username, password, rememberMe: 'local' })
+        .then((user) => showVideos(user))
+        .catch((e) => document.getElementById('login-error').innerHTML = e)
+    }
+
+    function handleSignUp(e) {
+      e.preventDefault()
+
+      const username = document.getElementById('signup-username').value
+      const password = document.getElementById('signup-password').value
+
+      userbase.signUp({ username, password, rememberMe: 'local' })
+        .then((user) => showVideos(user))
+        .catch((e) => document.getElementById('signup-error').innerHTML = e)
+    }
+
+    function handleLogout() {
+      userbase.signOut()
+        .then(() => showAuth())
+        .catch((e) => document.getElementById('logout-error').innerText = e)
+    }
+
+    function showVideos(user) {
+      document.getElementById('auth-view').style.display = 'none'
+      document.getElementById('videos-view').style.display = 'block'
+
+      // reset the videos view
+      document.getElementById('username').innerHTML = user.username
+      document.getElementById('videos').innerText = ''
+      document.getElementById('db-loading').style.display = 'block'
+      document.getElementById('db-error').innerText = ''
+
+      userbase.openDatabase({ databaseName: 'videos', changeHandler })
+        .catch((e) => document.getElementById('db-error').innerText = e)
+    }
+
+    function showAuth() {
+      document.getElementById('videos-view').style.display = 'none'
+      document.getElementById('auth-view').style.display = 'block'
+      document.getElementById('login-username').value = ''
+      document.getElementById('login-password').value = ''
+      document.getElementById('login-error').innerText = ''
+      document.getElementById('signup-username').value = ''
+      document.getElementById('signup-password').value = ''
+      document.getElementById('signup-error').innerText = ''
+    }
+
+    function changeHandler(items) {
+      document.getElementById('db-loading').style.display = 'none'
+
+      const videosList = document.getElementById('videos')
+      const videoPlayer = document.querySelector('video')
+
+      if (items.length === 0) {
+        videosList.innerText = 'Empty'
+      } else {
+        // clear the list
+        videosList.innerHTML = ''
+
+        // render all the video items
+        for (let i = 0; i < items.length; i++) {
+          const { itemId, fileId, fileName, fileSize } = items[i]
+          if (!fileId) continue          
+
+          // build the video delete button
+          const videoDelete = document.createElement('button')
+          videoDelete.innerHTML = 'X'
+          videoDelete.style.display = 'inline-block'
+          videoDelete.onclick = () => {
+            if (playingVideo === fileId) {
+              unloadVideo(videoPlayer)
+              playingVideo = null
+            }
+
+            userbase.deleteItem({ databaseName: 'videos', itemId })
+              .catch((e) => document.getElementById('add-video-error').innerHTML = e)
+          }
+
+          // build the video label
+          const videoLabel = document.createElement('label')
+          videoLabel.innerHTML = fileName
+          videoLabel.onclick = () => {
+            unloadVideo(videoPlayer)
+            playingVideo = fileId
+
+            const mediaSource = new MediaSource()
+            videoPlayer.src = URL.createObjectURL(mediaSource)
+
+            mediaSource.addEventListener('sourceopen', async function (e) {
+              const sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')
+
+              const CHUNK_SIZE = 1024 * 512 // 512kb
+              let position = 0
+
+              while (position <= fileSize) {
+                if (playingVideo !== fileId) return
+
+                const { file } = await userbase.getFile({ databaseName: 'videos', fileId, range: { 
+                  start: position, end: Math.min(position + CHUNK_SIZE, fileSize) 
+                }})
+                sourceBuffer.appendBuffer(await readFile(file))
+
+                // wait for browser to finsih appending buffer
+                await new Promise(resolve => sourceBuffer.onupdateend = () => resolve())
+
+                position += CHUNK_SIZE
+                if (position > fileSize) {
+                  mediaSource.endOfStream(HTMLMediaElement.EOS_NO_ERROR);
+                }
+              }
+            }, false);
+          }
+          videoLabel.style.cssText = 'color: blue; cursor: pointer; text-decoration: underline; margin-left: .5rem;'
+
+          // append the video item to the list
+          const videoItem = document.createElement('div')
+          videoItem.appendChild(videoDelete)
+          videoItem.appendChild(videoLabel)
+          videosList.appendChild(videoItem)
+        }
+      }
+
+      if (!Object.keys(uploadingVideos).length) document.getElementById('upload-video-loader').style.display = 'none'
+    }
+
+    function unloadVideo (videoPlayer) {
+      videoPlayer.pause()
+      videoPlayer.removeAttribute('src')
+      videoPlayer.load()
+    }
+
+    function readFile (file) {
+      const reader = new FileReader()
+      return new Promise((resolve, reject) => {
+        reader.onload = (e) => {
+          if (!e.target.error) {
+            resolve(e.target.result)
+          } else {
+            reject(e.target.error)
+          }
+        }
+        reader.readAsArrayBuffer(file)
+      })
+    }
+
+    function addVideoHandler(e) {
+      e.preventDefault()
+
+      const addVideoElement = document.getElementById('add-video')
+      const file = addVideoElement.files && addVideoElement.files[0]
+      if (!file) return
+
+      const itemId = Math.random().toString()
+      userbase.insertItem({ databaseName: 'videos', itemId, item: file.name })
+        .then(() => {
+          uploadingVideos[itemId] = true
+          document.getElementById('upload-video-loader').style.cssText = 'display: inline-block; margin-left: .75em;'
+
+          userbase.uploadFile({ databaseName: 'videos', itemId, file })            
+            .catch((e) => document.getElementById('add-video-error').innerHTML = e)
+            .finally(() => {
+              delete uploadingVideos[itemId]
+              if (!Object.keys(uploadingVideos).length) document.getElementById('upload-video-loader').style.display = 'none'
+            })
+        })
+        .catch((e) => document.getElementById('add-video-error').innerHTML = e)
+    }
+
+    document.getElementById('login-form').addEventListener('submit', handleLogin)
+    document.getElementById('signup-form').addEventListener('submit', handleSignUp)
+    document.getElementById('add-video-form').addEventListener('submit', addVideoHandler)
+    document.getElementById('logout-button').addEventListener('click', handleLogout)
+    
+    document.getElementById('videos-view').style.display = 'none'
+    document.getElementById('auth-view').style.display = 'none'
+
+  </script>
+</body>
+</html>
