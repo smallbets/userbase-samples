@@ -54,7 +54,7 @@
     let playingVideo
     let uploadingVideos = {}
 
-    userbase.init({ appId: '507612d6-3cd8-489d-9eb0-7c9f0a19411c' })
+    userbase.init({ appId: 'afc6adcd-7d72-46e8-9b92-9c5dfef1f497' })
       .then((session) => session.user ? showVideos(session.user) : showAuth())
       .catch(() => showAuth())
       .finally(() => document.getElementById('loading-view').style.display = 'none')
