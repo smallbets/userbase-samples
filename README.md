@@ -28,6 +28,11 @@ The Ugliest Todo application written in TypeScript and bundlded with webpack.
 
 The Ugliest Todo application with Stripe payment and Netlify Functions webhook handler.
 
+##### [Ugliest MP4 Video Player](./ugliest-mp4-player)
+
+An unstyled but fully functional MP4 player and storage solution written
+in a single HTML file.
+
 ### Contributing
 
 This project welcomes community contributions and suggestions. File an issue or
