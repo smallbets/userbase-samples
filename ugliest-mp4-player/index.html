@@ -212,10 +212,10 @@
 
     function addVideoHandler(e) {
       e.preventDefault()
-
       const addVideoElement = document.getElementById('add-video')
       const file = addVideoElement.files && addVideoElement.files[0]
       if (!file) return
+      if (file.size > (1024 * 1024 * 10)) return window.alert('Please include a file smaller than 10 MB for this sample!')
 
       const itemId = Math.random().toString()
       userbase.insertItem({ databaseName: 'videos', itemId, item: file.name })
