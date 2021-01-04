@@ -33,6 +33,10 @@ The Ugliest Todo application with Stripe payment and Netlify Functions webhook h
 An unstyled but fully functional MP4 player and storage solution written
 in a single HTML file.
 
+##### [Ugliest Todo Cordova](./ugliest-todo-cordova)
+
+The Ugliest iOS/Android Todo app.
+
 ### Contributing
 
 This project welcomes community contributions and suggestions. File an issue or
