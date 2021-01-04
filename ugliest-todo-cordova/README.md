@@ -45,7 +45,7 @@ cordova run ios
 
 ## Misc.
 
-Check out our [Userbase quickstart](https://userbase.com/docs/) for finer details on writing the `index.html` file from scratch. It explains each section of the code step-by-step. The only differences between this repo's `index.html` file and the `index.html` file in the quickstart are:
+Check out the [Userbase quickstart](https://userbase.com/docs/) for finer details on writing the `index.html` file from scratch. It explains each section of the code step-by-step. The only differences between this repo's `index.html` file and the `index.html` file in the quickstart are:
 
 - The script tag at the top  - <i>this repo's `index.html` uses `cordova.js` to load the Userbase plugin</i>.
-- The `onDeviceReady` event listener - <i>Cordova fires this even once it finishes setting up the app</i>.
+- The `onDeviceReady` event listener - <i>Cordova fires this once it finishes setting up the app</i>.
