@@ -37,6 +37,10 @@ in a single HTML file.
 
 The Ugliest iOS/Android Todo app.
 
+##### [Ugliest Todo Electron](./ugliest-todo-electron)
+
+The Ugliest desktop Todo app.
+
 ### Contributing
 
 This project welcomes community contributions and suggestions. File an issue or

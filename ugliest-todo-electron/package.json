@@ -1,0 +1,12 @@
+{
+  "name": "ugliest-todo-electron",
+  "version": "1.0.0",
+  "description": "Ugly electron to-do app using Userbase",
+  "main": "main.js",
+  "devDependencies": {
+    "electron": "^11.1.1"
+  },
+  "scripts": {
+    "start": "electron ."
+  }
+}
