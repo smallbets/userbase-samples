@@ -12,4 +12,4 @@ npm install
 npm run build
 ```
 
-Open `dist/index.html` in your browser.
+Open `./index.html` in your browser.
