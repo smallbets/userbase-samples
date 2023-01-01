@@ -6,8 +6,8 @@
     "watch": "webpack --watch --devtool inline-source-map"
   },
   "devDependencies": {
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
